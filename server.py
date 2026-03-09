@@ -294,16 +294,30 @@ async def adventure_advisor(request: Request):
 
 
 # Serve static files
-# Serve static files from the same directory as this script (works on any host)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(BASE_DIR, "images")
 
-# Mount images directory explicitly so /images/*.jpg resolves correctly
-if os.path.isdir(IMAGES_DIR):
-    app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
+# Explicit route for images — must be defined BEFORE the catch-all / mount
+@app.get("/images/{filename}")
+async def serve_image(filename: str):
+    image_path = os.path.join(IMAGES_DIR, filename)
+    if os.path.isfile(image_path):
+        # Determine media type
+        ext = filename.lower().split('.')[-1]
+        media_types = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp', 'gif': 'image/gif'}
+        media_type = media_types.get(ext, 'application/octet-stream')
+        return FileResponse(image_path, media_type=media_type)
+    return JSONResponse({"error": "Image not found"}, status_code=404)
 
-# Mount root for index.html and everything else
-app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="static")
+# Serve index.html at root
+@app.get("/")
+async def serve_index():
+    index_path = os.path.join(BASE_DIR, "index.html")
+    if os.path.isfile(index_path):
+        with open(index_path, 'r') as f:
+            content = f.read()
+        return HTMLResponse(content=content)
+    return HTMLResponse(content="<h1>Not Found</h1>", status_code=404)
 
 if __name__ == "__main__":
     import uvicorn
