@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mountain High Outfitters — Trail Guide AI Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:        #6481A2;
+      --blue-dark:   #4a6080;
+      --blue-light:  #7a96b8;
+      --blue-pale:   #eef2f7;
+      --green:       #2D5016;
+      --green-light: #3d6b1f;
+      --gold:        #8B6914;
+      --gold-light:  #a07d1e;
+      --cream:       #F5F0E8;
+      --cream-dark:  #EDE7D9;
+      --text-dark:   #1a1a1a;
+      --text-mid:    #4a4a4a;
+      --text-light:  #7a7a7a;
+      --white:       #ffffff;
+      --shadow-sm:   0 2px 8px rgba(0,0,0,.08);
+      --shadow-md:   0 6px 24px rgba(0,0,0,.12);
+      --shadow-lg:   0 16px 48px rgba(0,0,0,.18);
+      --radius:      10px;
+      --radius-lg:   16px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Montserrat', Georgia, sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── ANNOUNCEMENT BAR ─────────────────────────────────────── */
+    .announce-bar {
+      background: var(--blue-dark);
+      color: rgba(255,255,255,.9);
+      text-align: center;
+      font-size: .78rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      padding: 8px 16px;
+    }
+    .announce-bar strong { color: #fff; }
+
+    /* ─── STICKY HEADER ────────────────────────────────────────── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,.10);
+      border-bottom: 3px solid var(--blue);
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 14px;
+      text-decoration: none;
+    }
+    .logo-wrap img {
+      height: 100px;
+      width: auto;
+    }
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+    .logo-text .logo-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--green);
+      white-space: nowrap;
+    }
+    .logo-text .logo-tagline {
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+    nav { display: flex; align-items: center; gap: 2px; }
+    nav a {
+      color: var(--text-mid);
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: background .2s, color .2s;
+      white-space: nowrap;
+      letter-spacing: .02em;
+    }
+    nav a:hover { background: var(--blue-pale); color: var(--blue-dark); }
+    .nav-cta {
+      background: var(--blue) !important;
+      color: #fff !important;
+      font-weight: 700 !important;
+      padding: 8px 18px !important;
+      border-radius: 20px !important;
+      margin-left: 6px;
+    }
+    .nav-cta:hover { background: var(--blue-dark) !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--blue); border-radius: 2px; }
+
+    /* ─── BRANDS BAR ───────────────────────────────────────────── */
+    .brands-bar {
+      background: var(--blue);
+      padding: 10px 0;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .brands-label {
+      text-align: center;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+      margin-bottom: 7px;
+    }
+    .brands-scroll-wrap { overflow: hidden; position: relative; }
+    .brands-scroll-wrap::before,
+    .brands-scroll-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 80px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .brands-scroll-wrap::before { left: 0; background: linear-gradient(to right, var(--blue), transparent); }
+    .brands-scroll-wrap::after  { right: 0; background: linear-gradient(to left, var(--blue), transparent); }
+    .brands-track {
+      display: flex;
+      gap: 40px;
+      animation: scroll-brands 28s linear infinite;
+      width: max-content;
+    }
+    .brands-track:hover { animation-play-state: paused; }
+    .brands-track span {
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      color: rgba(255,255,255,.9);
+      white-space: nowrap;
+    }
+    .brands-track span::before { content: '·'; margin-right: 40px; color: rgba(255,255,255,.3); }
+    .brands-track span:first-child::before { display: none; }
+    @keyframes scroll-brands {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ─── HERO ─────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 560px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('images/hero-outdoor.jpg');
+      background-size: cover;
+      background-position: center 30%;
+      transform: scale(1.03);
+      transition: transform 8s ease;
+    }
+    .hero:hover .hero-bg { transform: scale(1.0); }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(20,35,12,.55) 0%,
+        rgba(30,50,18,.45) 40%,
+        rgba(10,20,5,.72) 100%
+      );
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 24px 72px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.65);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.4rem, 5.5vw, 4rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.12;
+      margin-bottom: 22px;
+      text-shadow: 0 2px 16px rgba(0,0,0,.35);
+    }
+    .hero p {
+      font-size: clamp(.95rem, 2vw, 1.15rem);
+      color: rgba(255,255,255,.85);
+      max-width: 560px;
+      margin: 0 auto 36px;
+      line-height: 1.75;
+      font-weight: 400;
+    }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .badge {
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.28);
+      color: rgba(255,255,255,.92);
+      font-size: .8rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 20px;
+      backdrop-filter: blur(6px);
+      transition: background .2s;
+      letter-spacing: .02em;
+    }
+    .badge:hover { background: rgba(255,255,255,.24); }
+
+    /* ─── TRAIL GUIDE EXPLAINER SECTION ───────────────────────── */
+    .explainer {
+      background: var(--blue-pale);
+      border-top: 4px solid var(--blue);
+      border-bottom: 4px solid var(--blue);
+      padding: 64px 24px;
+    }
+    .explainer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+    .explainer-mascot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .explainer-mascot img {
+      width: 220px;
+      height: 220px;
+      object-fit: contain;
+      background: transparent;
+      mix-blend-mode: normal;
+      filter: drop-shadow(0 8px 32px rgba(0,0,0,.35));
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+    .mascot-label {
+      background: var(--blue);
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 20px;
+    }
+    .explainer-text { }
+    .explainer-eyebrow {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 10px;
+    }
+    .explainer-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .explainer-title span { color: var(--blue); }
+    .explainer-desc {
+      font-size: 1rem;
+      color: var(--text-mid);
+      line-height: 1.8;
+      margin-bottom: 28px;
+      max-width: 540px;
+    }
+    .explainer-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid rgba(100,129,162,.2);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .feature-item:hover {
+      box-shadow: var(--shadow-sm);
+      border-color: var(--blue);
+    }
+    .feature-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .feature-text { }
+    .feature-title {
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+    .feature-desc {
+      font-size: .75rem;
+      color: var(--text-light);
+      line-height: 1.4;
+    }
+    .explainer-cta {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      padding: 13px 28px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      letter-spacing: .03em;
+      box-shadow: 0 4px 16px rgba(100,129,162,.4);
+    }
+    .btn-primary:hover {
+      background: var(--blue-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(100,129,162,.5);
+    }
+    .explainer-note {
+      font-size: .78rem;
+      color: var(--text-light);
+      font-style: italic;
+    }
+
+    /* ─── SECTION WRAPPER ──────────────────────────────────────── */
+    .section { max-width: 1280px; margin: 0 auto; padding: 64px 24px; }
+    .section-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: .9rem;
+      color: var(--text-light);
+      margin-bottom: 36px;
+      font-weight: 500;
+    }
+
+    /* ─── PRODUCT GRID ─────────────────────────────────────────── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+    }
+    .product-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform .25s ease, box-shadow .25s ease;
+      cursor: pointer;
+      border: 1px solid rgba(100,129,162,.12);
+    }
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--blue);
+    }
+    .product-img-wrap {
+      position: relative;
+      background: #f8f6f2;
+      height: 240px;
+      overflow: hidden;
+    }
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 16px;
+      transition: transform .3s ease;
+    }
+    .product-card:hover .product-img-wrap img { transform: scale(1.05); }
+    .product-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--blue);
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+    .product-info { padding: 18px 20px 20px; }
+    .product-brand {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+    .product-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .product-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .product-price {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+    .product-btn {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      font-size: .78rem;
+      font-weight: 700;
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: background .2s;
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: .02em;
+    }
+    .product-btn:hover { background: var(--blue-dark); }
+
+    /* ─── FOOTER ───────────────────────────────────────────────── */
+    footer {
+      background: #2f3d4d;
+      color: rgba(255,255,255,.75);
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .footer-logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .footer-logo-wrap img {
+      height: 52px;
+      width: auto;
+      filter: brightness(0) invert(1);
+      opacity: .9;
+    }
+    .footer-logo-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    footer p { font-size: .875rem; margin-bottom: 4px; }
+    footer .footer-demo {
+      font-size: .75rem;
+      color: rgba(255,255,255,.35);
+      margin-top: 20px;
+      letter-spacing: .04em;
+    }
+    .footer-divider {
+      width: 60px;
+      height: 2px;
+      background: rgba(255,255,255,.2);
+      margin: 16px auto;
+    }
+
+    /* ─── CHAT LAUNCHER ────────────────────────────────────────── */
+    #chat-launcher {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 1000;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 28px;
+      padding: 14px 22px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 24px rgba(100,129,162,.55);
+      transition: transform .2s, box-shadow .2s, background .2s;
+      letter-spacing: .02em;
+    }
+    #chat-launcher:hover {
+      background: var(--blue-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(100,129,162,.65);
+    }
+    #chat-launcher.open { background: #555; }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: #4ade80;
+      border-radius: 50%;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .pulse-dot::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: rgba(74,222,128,.4);
+      animation: pulse 2s ease-out infinite;
+    }
+    @keyframes pulse {
+      0%   { transform: scale(.8); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* ─── CHAT WINDOW ──────────────────────────────────────────── */
+    #chat-window {
+      position: fixed;
+      bottom: 96px;
+      right: 28px;
+      z-index: 999;
+      width: 390px;
+      height: 580px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0,0,0,.22);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(.92) translateY(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .28s cubic-bezier(.34,1.56,.64,1), opacity .22s ease;
+      transform-origin: bottom right;
+      border: 1px solid rgba(100,129,162,.2);
+    }
+    #chat-window.visible {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Chat Header */
+    .chat-header {
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .chat-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.3);
+      overflow: hidden;
+    }
+    .chat-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .chat-header-info { flex: 1; min-width: 0; }
+    .chat-header-name {
+      font-weight: 700;
+      font-size: .95rem;
+      color: #fff;
+      line-height: 1.2;
+      letter-spacing: .01em;
+    }
+    .chat-header-sub {
+      font-size: .7rem;
+      color: rgba(255,255,255,.65);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+    .chat-header-sub .online-dot {
+      width: 7px; height: 7px;
+      background: #4ade80;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .chat-close {
+      background: rgba(255,255,255,.12);
+      border: none;
+      color: rgba(255,255,255,.8);
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .chat-close:hover { background: rgba(255,255,255,.22); color: #fff; }
+
+    /* Messages */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 14px;
+      background: #f9f7f3;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scroll-behavior: smooth;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 86%;
+      animation: msg-in .22s ease;
+    }
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg.bot { align-self: flex-start; }
+    .msg.user { align-self: flex-end; }
+
+    .msg-bubble {
+      padding: 11px 14px;
+      border-radius: 16px;
+      font-size: .875rem;
+      line-height: 1.55;
+    }
+    .msg.bot .msg-bubble {
+      background: var(--cream-dark);
+      color: var(--text-dark);
+      border-bottom-left-radius: 4px;
+    }
+    .msg.user .msg-bubble {
+      background: var(--blue);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg-bubble strong { font-weight: 700; }
+    .msg-bubble ul { padding-left: 16px; margin: 6px 0; }
+    .msg-bubble li { margin-bottom: 4px; }
+    .msg-time {
+      font-size: .67rem;
+      color: var(--text-light);
+      margin-top: 3px;
+      padding: 0 4px;
+    }
+    .msg.user .msg-time { text-align: right; }
+
+    /* Typing indicator */
+    .typing-bubble {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--cream-dark);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+      animation: msg-in .2s ease;
+    }
+    .typing-bubble span {
+      width: 7px; height: 7px;
+      background: #9ca3af;
+      border-radius: 50%;
+      animation: bounce .9s ease infinite;
+    }
+    .typing-bubble span:nth-child(2) { animation-delay: .15s; }
+    .typing-bubble span:nth-child(3) { animation-delay: .30s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%            { transform: translateY(-6px); }
+    }
+
+    /* Quick replies */
+    .quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 8px 14px 4px;
+      background: #f9f7f3;
+    }
+    .qr-btn {
+      background: var(--white);
+      border: 1.5px solid var(--blue);
+      color: var(--blue);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .76rem;
+      font-weight: 700;
+      padding: 6px 13px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: background .18s, color .18s;
+      white-space: nowrap;
+      letter-spacing: .02em;
+    }
+    .qr-btn:hover { background: var(--blue); color: #fff; }
+
+    /* Email capture */
+    .email-capture {
+      background: var(--blue-pale);
+      border: 1px solid rgba(100,129,162,.25);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 4px 0;
+      animation: msg-in .22s ease;
+    }
+    .email-capture p {
+      font-size: .82rem;
+      color: var(--text-mid);
+      margin-bottom: 8px;
+    }
+    .email-capture-row {
+      display: flex;
+      gap: 7px;
+    }
+    .email-capture input {
+      flex: 1;
+      border: 1.5px solid #c5d3e0;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .82rem;
+      outline: none;
+      background: #fff;
+      transition: border-color .2s;
+    }
+    .email-capture input:focus { border-color: var(--blue); }
+    .email-capture button {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .email-capture button:hover { background: var(--blue-dark); }
+
+    /* Chat input */
+    .chat-input-area {
+      background: var(--white);
+      border-top: 1px solid #e8e2d8;
+      padding: 12px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    #chat-input {
+      flex: 1;
+      border: 1.5px solid #c5d3e0;
+      border-radius: 22px;
+      padding: 9px 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .875rem;
+      outline: none;
+      background: #faf8f4;
+      transition: border-color .2s;
+      resize: none;
+    }
+    #chat-input:focus { border-color: var(--blue); background: #fff; }
+    #send-btn {
+      width: 38px; height: 38px;
+      background: var(--blue);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .15s;
+      flex-shrink: 0;
+    }
+    #send-btn:hover { background: var(--blue-dark); transform: scale(1.08); }
+
+    /* ─── LOYALTY / SUMMIT REWARDS ─────────────────────────────── */
+    .loyalty-section {
+      background: linear-gradient(160deg, #1a2a3a 0%, #2f3d4d 50%, #1e3a2a 100%);
+      padding: 80px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .loyalty-section::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(100,129,162,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .loyalty-section::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(74,162,100,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .loyalty-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .loyalty-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .loyalty-eyebrow {
+      display: inline-block;
+      background: rgba(100,129,162,.25);
+      color: #a8c4e0;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(100,129,162,.3);
+    }
+    .loyalty-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.15;
+    }
+    .loyalty-title span {
+      color: #f0c040;
+    }
+    .loyalty-subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,.65);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    /* Tiers */
+    .loyalty-tiers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 56px;
+    }
+    .tier-card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
+      transition: transform .25s, border-color .25s, background .25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .tier-card:hover {
+      transform: translateY(-6px);
+      background: rgba(255,255,255,.1);
+      border-color: rgba(255,255,255,.25);
+    }
+    .tier-card.featured {
+      border-color: #f0c040;
+      background: rgba(240,192,64,.08);
+    }
+    .tier-card.featured::before {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      background: #f0c040;
+      color: #1a2a3a;
+      font-size: .62rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      padding: 4px 16px;
+      border-radius: 0 0 10px 10px;
+    }
+    .tier-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .tier-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .tier-threshold {
+      font-size: .78rem;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    .tier-points {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #f0c040;
+      margin-bottom: 4px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .tier-points-label {
+      font-size: .72rem;
+      color: rgba(255,255,255,.5);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .tier-perks {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+    }
+    .tier-perks li {
+      font-size: .82rem;
+      color: rgba(255,255,255,.75);
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+    .tier-perks li:last-child { border-bottom: none; }
+    .tier-perks li::before {
+      content: '✓';
+      color: #4ade80;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    /* How it works */
+    .loyalty-how {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 56px;
+    }
+    .how-step {
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .how-num {
+      width: 44px; height: 44px;
+      background: rgba(100,129,162,.25);
+      border: 2px solid rgba(100,129,162,.4);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #a8c4e0;
+      margin: 0 auto 12px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .how-title {
+      font-size: .9rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .how-desc {
+      font-size: .78rem;
+      color: rgba(255,255,255,.5);
+      line-height: 1.5;
+    }
+    /* Sign-up form */
+    .loyalty-signup {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      padding: 48px 40px;
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .loyalty-signup h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .loyalty-signup p {
+      font-size: .88rem;
+      color: rgba(255,255,255,.55);
+      margin-bottom: 28px;
+    }
+    .loyalty-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .loyalty-form input,
+    .loyalty-form select {
+      background: rgba(255,255,255,.08);
+      border: 1.5px solid rgba(255,255,255,.18);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .875rem;
+      color: #fff;
+      outline: none;
+      transition: border-color .2s, background .2s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .loyalty-form input::placeholder { color: rgba(255,255,255,.35); }
+    .loyalty-form input:focus,
+    .loyalty-form select:focus {
+      border-color: #6481A2;
+      background: rgba(255,255,255,.12);
+    }
+    .loyalty-form select option { background: #2f3d4d; color: #fff; }
+    .loyalty-form .full-width { grid-column: 1 / -1; }
+    .loyalty-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #f0c040 0%, #e0a820 100%);
+      color: #1a2a3a;
+      border: none;
+      border-radius: 12px;
+      padding: 15px 32px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      letter-spacing: .03em;
+      box-shadow: 0 4px 20px rgba(240,192,64,.35);
+      margin-top: 4px;
+    }
+    .loyalty-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(240,192,64,.5);
+    }
+    .loyalty-fine {
+      font-size: .72rem;
+      color: rgba(255,255,255,.3);
+      margin-top: 12px;
+    }
+    .loyalty-success {
+      display: none;
+      padding: 20px;
+      background: rgba(74,222,128,.12);
+      border: 1px solid rgba(74,222,128,.3);
+      border-radius: 12px;
+      color: #4ade80;
+      font-weight: 700;
+      font-size: .95rem;
+      margin-top: 12px;
+    }
+
+    /* ─── RESPONSIVE ───────────────────────────────────────────── */
+    /* ─── MOBILE NAV DRAWER ───────────────────────────────────── */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 1100;
+      background: rgba(0,0,0,.5);
+      backdrop-filter: blur(4px);
+    }
+    .mobile-nav.open { display: block; }
+    .mobile-nav-panel {
+      position: absolute;
+      top: 0; left: 0;
+      width: 280px;
+      height: 100%;
+      background: #fff;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 24px rgba(0,0,0,.2);
+      transform: translateX(-100%);
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    .mobile-nav.open .mobile-nav-panel { transform: translateX(0); }
+    .mobile-nav-header {
+      background: var(--blue);
+      padding: 20px 20px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mobile-nav-header img { height: 44px; filter: brightness(0) invert(1); }
+    .mobile-nav-close {
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: #fff;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mobile-nav-links {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+    .mobile-nav-links a {
+      display: block;
+      padding: 14px 24px;
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      text-decoration: none;
+      border-bottom: 1px solid #f0ece4;
+      transition: background .15s, color .15s;
+      letter-spacing: .01em;
+    }
+    .mobile-nav-links a:hover { background: var(--blue-pale); color: var(--blue-dark); }
+    .mobile-nav-links a.mobile-nav-cta {
+      margin: 16px 20px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 24px;
+      text-align: center;
+      border-bottom: none;
+      padding: 12px 20px;
+    }
+    .mobile-nav-links a.mobile-nav-cta:hover { background: var(--blue-dark); }
+
+    @media (max-width: 900px) {
+      .explainer-inner {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        text-align: center;
+      }
+      .explainer-mascot { flex-direction: row; justify-content: center; }
+      .explainer-desc { margin: 0 auto 28px; }
+      .explainer-cta { justify-content: center; }
+    }
+    @media (max-width: 768px) {
+      nav { display: none; }
+      .hamburger { display: flex; }
+      .logo-text { display: none; }
+      .logo-wrap img { height: 64px; }
+      #chat-window {
+        width: calc(100vw - 24px);
+        right: 12px;
+        bottom: 88px;
+        height: calc(100vh - 110px);
+        max-height: 580px;
+      }
+      #chat-launcher { right: 16px; bottom: 20px; }
+      .product-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+      .explainer-features { grid-template-columns: 1fr; }
+      /* Force mascot visible on mobile */
+      .explainer-mascot {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      .explainer-mascot img {
+        width: 180px !important;
+        height: 180px !important;
+        display: block !important;
+      }
+    }
+    @media (max-width: 768px) {
+      .loyalty-tiers { grid-template-columns: 1fr; gap: 16px; }
+      .loyalty-how { grid-template-columns: repeat(2, 1fr); }
+      .loyalty-signup { padding: 32px 20px; }
+      .loyalty-form { grid-template-columns: 1fr; }
+      .loyalty-form .full-width { grid-column: 1; }
+    }
+    @media (max-width: 480px) {
+      .hero-content { padding: 56px 16px 52px; }
+      .section { padding: 48px 16px; }
+      .explainer { padding: 48px 16px; }
+      .explainer-mascot img { width: 150px !important; height: 150px !important; }
+      .loyalty-how { grid-template-columns: 1fr; }
+      .loyalty-section { padding: 56px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ANNOUNCEMENT BAR
+═══════════════════════════════════════════════════════════════ -->
+<div class="announce-bar">
+  <strong>FREE SHIPPING</strong> on orders over $95 &nbsp;·&nbsp; Now open in <strong>Hilton Head, SC</strong> &nbsp;·&nbsp; 30-Day easy returns
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo-wrap" aria-label="Mountain High Outfitters Home">
+      <img
+        src="https://mountainhighoutfitters.com/cdn/shop/files/MHOLogo_2021_2_1_200x.svg?v=1766504138"
+        alt="Mountain High Outfitters"
+        onerror="this.src='https://mountainhighoutfitters.com/cdn/shop/files/Logo.png?v=1695371294'"
+      />
+      <div class="logo-text">
+        <span class="logo-name">Mountain High Outfitters</span>
+        <span class="logo-tagline">Get Out. Get Active. Be Inspired.</span>
+      </div>
+    </a>
+    <nav>
+      <a href="https://mountainhighoutfitters.com/collections/womens" target="_blank">Womens</a>
+      <a href="https://mountainhighoutfitters.com/collections/mens" target="_blank">Mens</a>
+      <a href="https://mountainhighoutfitters.com/collections/kids" target="_blank">Kids</a>
+      <a href="https://mountainhighoutfitters.com/collections/gear" target="_blank">Gear</a>
+      <a href="https://mountainhighoutfitters.com/collections/sale" target="_blank">Sale</a>
+      <a href="https://mountainhighoutfitters.com/pages/store-locator" target="_blank" class="nav-cta">Find a Shop</a>
+    </nav>
+    <div class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MOBILE NAV DRAWER
+═══════════════════════════════════════════════════════════════ -->
+<div class="mobile-nav" id="mobile-nav">
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-header">
+      <img src="https://mountainhighoutfitters.com/cdn/shop/files/MHOLogo_2021_2_1_200x.svg?v=1766504138" alt="MHO" />
+      <button class="mobile-nav-close" id="mobile-nav-close">✕</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="#hero-section">🏔️ Home</a>
+      <a href="#trail-guide-section">🤖 Trail Guide AI</a>
+      <a href="#products-section">🎒 Staff Picks</a>
+      <a href="#" onclick="document.getElementById('chat-launcher').click(); document.getElementById('mobile-nav').classList.remove('open'); return false;">💬 Chat with Trail Guide</a>
+      <a href="https://mountainhighoutfitters.com/collections/womens" target="_blank">👗 Womens</a>
+      <a href="https://mountainhighoutfitters.com/collections/mens" target="_blank">👕 Mens</a>
+      <a href="https://mountainhighoutfitters.com/collections/kids" target="_blank">🧒 Kids</a>
+      <a href="https://mountainhighoutfitters.com/collections/gear" target="_blank">⛺ Gear</a>
+      <a href="https://mountainhighoutfitters.com/collections/sale" target="_blank">🏷️ Sale</a>
+      <a href="https://mountainhighoutfitters.com/pages/store-locator" target="_blank" class="mobile-nav-cta">📍 Find a Shop</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     BRANDS BAR
+═══════════════════════════════════════════════════════════════ -->
+<div class="brands-bar">
+  <div class="brands-label">Featured Brands</div>
+  <div class="brands-scroll-wrap">
+    <div class="brands-track" id="brands-track">
+      <span>Patagonia</span>
+      <span>The North Face</span>
+      <span>Osprey</span>
+      <span>Merrell</span>
+      <span>YETI</span>
+      <span>Arc'teryx</span>
+      <span>Black Diamond</span>
+      <span>Costa del Mar</span>
+      <span>Chubbies</span>
+      <span>Salomon</span>
+      <span>Columbia</span>
+      <span>Darn Tough</span>
+      <span>Hydro Flask</span>
+      <span>Helly Hansen</span>
+      <span>Free Fly</span>
+      <span>Marine Layer</span>
+      <!-- duplicate for seamless loop -->
+      <span>Patagonia</span>
+      <span>The North Face</span>
+      <span>Osprey</span>
+      <span>Merrell</span>
+      <span>YETI</span>
+      <span>Arc'teryx</span>
+      <span>Black Diamond</span>
+      <span>Costa del Mar</span>
+      <span>Chubbies</span>
+      <span>Salomon</span>
+      <span>Columbia</span>
+      <span>Darn Tough</span>
+      <span>Hydro Flask</span>
+      <span>Helly Hansen</span>
+      <span>Free Fly</span>
+      <span>Marine Layer</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO — FULL BLEED OUTDOOR PHOTO
+═══════════════════════════════════════════════════════════════ -->
+<section class="hero" id="hero-section">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">Get Out · Get Active · Be Inspired · Live Your Passion</span>
+    <h1>Your Next Adventure<br>Starts Here</h1>
+    <p>Expert gear, 160+ trusted brands, and a Trail Guide ready to help you find exactly what you need — 24/7.</p>
+    <div class="hero-badges">
+      <span class="badge">🏔️ 23 Locations</span>
+      <span class="badge">🚚 Free Shipping $95+</span>
+      <span class="badge">↩️ Easy Returns</span>
+      <span class="badge">⭐ Expert Staff</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TRAIL GUIDE EXPLAINER
+═══════════════════════════════════════════════════════════════ -->
+<section class="explainer" id="trail-guide-section">
+  <div class="explainer-inner">
+
+    <div class="explainer-mascot">
+      <img src="images/trail-guide-character.png" alt="Trail Guide AI Mascot" />
+      <div class="mascot-label">🏔️ Trail Guide AI</div>
+    </div>
+
+    <div class="explainer-text">
+      <div class="explainer-eyebrow">Introducing Trail Guide</div>
+      <h2 class="explainer-title">Your Personal<br><span>Outdoor Expert</span> — Available 24/7</h2>
+      <p class="explainer-desc">
+        Trail Guide is MHO's AI-powered shopping assistant, built to feel like talking to one of our best in-store staff members. Whether you're gearing up for a thru-hike, heading to the beach, or trying to nail the right size — Trail Guide has you covered, any time of day or night.
+      </p>
+
+      <div class="explainer-features">
+        <div class="feature-item">
+          <div class="feature-icon">🎒</div>
+          <div class="feature-text">
+            <div class="feature-title">Gear Recommendations</div>
+            <div class="feature-desc">Personalized picks from 160+ brands based on your activity and budget.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📏</div>
+          <div class="feature-text">
+            <div class="feature-title">Sizing Guidance</div>
+            <div class="feature-desc">Brand-by-brand fit advice so your order arrives right the first time.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📍</div>
+          <div class="feature-text">
+            <div class="feature-title">Store Locator</div>
+            <div class="feature-desc">Hours, locations, and in-store pickup info for all 23 Shops.</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📧</div>
+          <div class="feature-text">
+            <div class="feature-title">Email Your Picks</div>
+            <div class="feature-desc">Trail Guide emails your curated list so you can shop at your own pace.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="explainer-cta">
+        <button class="btn-primary" onclick="document.getElementById('chat-launcher').click()">
+          Chat with Trail Guide →
+        </button>
+        <span class="explainer-note">Try it now — click the button below or the launcher in the corner</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PRODUCT GRID
+═══════════════════════════════════════════════════════════════ -->
+<div class="section" id="products-section">
+  <h2 class="section-title">Staff Picks This Season</h2>
+  <p class="section-sub">Hand-selected by our outdoor experts across all 23 Shops.</p>
+  <div class="product-grid">
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="images/osprey-atmos.jpg" alt="Osprey Atmos AG 65L Pack" loading="lazy" />
+        <span class="product-badge">Best Seller</span>
+      </div>
+      <div class="product-info">
+        <div class="product-brand">Osprey</div>
+        <div class="product-name">Atmos AG 65L Pack</div>
+        <div class="product-footer">
+          <span class="product-price">$320</span>
+          <button class="product-btn">View Details</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="images/merrell-moab3.jpg" alt="Merrell Moab 3 Mid Waterproof" loading="lazy" />
+        <span class="product-badge">Top Rated</span>
+      </div>
+      <div class="product-info">
+        <div class="product-brand">Merrell</div>
+        <div class="product-name">Moab 3 Mid Waterproof</div>
+        <div class="product-footer">
+          <span class="product-price">$165</span>
+          <button class="product-btn">View Details</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="images/patagonia-down.jpg" alt="Patagonia Down Sweater Hoody" loading="lazy" />
+        <span class="product-badge">New Colors</span>
+      </div>
+      <div class="product-info">
+        <div class="product-brand">Patagonia</div>
+        <div class="product-name">Down Sweater Hoody</div>
+        <div class="product-footer">
+          <span class="product-price">$279</span>
+          <button class="product-btn">View Details</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="images/costa-slack-tide.jpg" alt="Costa Slack Tide Polarized" loading="lazy" />
+        <span class="product-badge">Water Sport</span>
+      </div>
+      <div class="product-info">
+        <div class="product-brand">Costa del Mar</div>
+        <div class="product-name">Slack Tide Polarized</div>
+        <div class="product-footer">
+          <span class="product-price">$199</span>
+          <button class="product-btn">View Details</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SUMMIT REWARDS — LOYALTY PROGRAM
+═══════════════════════════════════════════════════════════════ -->
+<section class="loyalty-section" id="loyalty-section">
+  <div class="loyalty-inner">
+
+    <!-- Header -->
+    <div class="loyalty-header">
+      <div class="loyalty-eyebrow">Member Rewards Program</div>
+      <h2 class="loyalty-title">Introducing <span>Summit Rewards</span></h2>
+      <p class="loyalty-subtitle">Earn points on every purchase, unlock exclusive perks, and get early access to new gear. Adventure more. Pay less.</p>
+    </div>
+
+    <!-- Three Tiers -->
+    <div class="loyalty-tiers">
+
+      <!-- Tier 1: Trail Starter -->
+      <div class="tier-card">
+        <span class="tier-icon">🥾</span>
+        <div class="tier-name">Trail Starter</div>
+        <div class="tier-threshold">Free to join</div>
+        <div class="tier-points">1 pt</div>
+        <div class="tier-points-label">per $1 spent</div>
+        <ul class="tier-perks">
+          <li>Earn 1 point per $1 spent</li>
+          <li>Birthday bonus points</li>
+          <li>Member-only sale access</li>
+          <li>100 pts = $5 off any purchase</li>
+          <li>Access to Trail Guide AI</li>
+        </ul>
+      </div>
+
+      <!-- Tier 2: Base Camp (featured) -->
+      <div class="tier-card featured">
+        <span class="tier-icon">🏕️</span>
+        <div class="tier-name">Base Camp</div>
+        <div class="tier-threshold">$250+ annual spend</div>
+        <div class="tier-points">1.5x</div>
+        <div class="tier-points-label">points multiplier</div>
+        <ul class="tier-perks">
+          <li>1.5x points on every purchase</li>
+          <li>Free standard shipping — always</li>
+          <li>Early new-arrival access</li>
+          <li>Exclusive member pricing events</li>
+          <li>Priority Trail Guide responses</li>
+          <li>Gear rental discounts</li>
+        </ul>
+      </div>
+
+      <!-- Tier 3: Summit Elite -->
+      <div class="tier-card">
+        <span class="tier-icon">🏔️</span>
+        <div class="tier-name">Summit Elite</div>
+        <div class="tier-threshold">$500+ annual spend</div>
+        <div class="tier-points">2x</div>
+        <div class="tier-points-label">points multiplier</div>
+        <ul class="tier-perks">
+          <li>2x points on every purchase</li>
+          <li>Free expedited shipping — always</li>
+          <li>Exclusive gear previews &amp; demos</li>
+          <li>VIP event invites &amp; clinics</li>
+          <li>Dedicated support line</li>
+          <li>Annual gear credit ($25)</li>
+          <li>First access to limited drops</li>
+        </ul>
+      </div>
+
+    </div><!-- /loyalty-tiers -->
+
+    <!-- How it works -->
+    <div class="loyalty-how">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-title">Join Free</div>
+        <div class="how-desc">Sign up in 30 seconds online or at any of our 23 Shops. No credit card required.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-title">Shop &amp; Earn</div>
+        <div class="how-desc">Every dollar spent earns points — in-store, online, or via in-store pickup.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-title">Level Up</div>
+        <div class="how-desc">Hit $250 or $500 in annual spend to unlock Base Camp or Summit Elite status.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">4</div>
+        <div class="how-title">Redeem Rewards</div>
+        <div class="how-desc">100 points = $5 off. Redeem at checkout online or in any Shop. No blackout dates.</div>
+      </div>
+    </div>
+
+    <!-- Sign-up Form -->
+    <div class="loyalty-signup">
+      <h3>🏔️ Join Summit Rewards Today</h3>
+      <p>It's free, it's instant, and your first purchase starts earning immediately.</p>
+      <form class="loyalty-form" id="loyalty-form" onsubmit="handleLoyaltySignup(event)">
+        <input type="text" placeholder="First Name" required />
+        <input type="text" placeholder="Last Name" required />
+        <input type="email" class="full-width" placeholder="Email Address" required />
+        <input type="tel" placeholder="Phone (optional)" />
+        <select>
+          <option value="" disabled selected>Nearest MHO Shop</option>
+          <option>Birmingham, AL — Patton Creek</option>
+          <option>Birmingham, AL — Summit</option>
+          <option>Huntsville, AL</option>
+          <option>Tuscaloosa, AL</option>
+          <option>Auburn, AL</option>
+          <option>Mobile, AL</option>
+          <option>Chattanooga, TN</option>
+          <option>Nashville, TN</option>
+          <option>Atlanta, GA</option>
+          <option>Destin, FL (Coming Soon)</option>
+          <option>Hilton Head, SC — Now Open!</option>
+          <option>Park City, UT — Now Open!</option>
+          <option>Other / Online</option>
+        </select>
+        <button type="submit" class="loyalty-submit full-width">🏔️ Join Summit Rewards — It's Free</button>
+      </form>
+      <div class="loyalty-success" id="loyalty-success">
+        ✅ Welcome to Summit Rewards! Check your email for your welcome bonus points.
+      </div>
+      <p class="loyalty-fine">By joining, you agree to receive MHO emails. Unsubscribe anytime. Points have no cash value and do not expire on active accounts.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-logo-wrap">
+    <img
+      src="https://mountainhighoutfitters.com/cdn/shop/files/MHOLogo_2021_2_1_200x.svg?v=1766504138"
+      alt="Mountain High Outfitters"
+      onerror="this.src='https://mountainhighoutfitters.com/cdn/shop/files/Logo.png?v=1695371294'"
+    />
+    <div class="footer-logo-name">Mountain High Outfitters</div>
+  </div>
+  <div class="footer-divider"></div>
+  <p>23 Shops across the Southeast &nbsp;·&nbsp; Mon–Sat 9am–8pm &nbsp;·&nbsp; Sun 11am–6pm</p>
+  <p>Alabama &nbsp;·&nbsp; Georgia &nbsp;·&nbsp; Tennessee &nbsp;·&nbsp; Florida &nbsp;·&nbsp; South Carolina &nbsp;·&nbsp; Utah</p>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.45);margin-top:6px;">✅ Now open: Hilton Head, SC &nbsp;·&nbsp; Park City, UT &nbsp;&nbsp;🔜 Coming soon: Myrtle Beach, SC &nbsp;·&nbsp; Destin, FL &nbsp;·&nbsp; Foley, AL</p>
+  <div class="footer-demo">Demo powered by MHO Trail Guide AI &nbsp;·&nbsp; Built by Taptico Solutions</div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CHAT LAUNCHER BUTTON
+═══════════════════════════════════════════════════════════════ -->
+<button id="chat-launcher" aria-label="Open Trail Guide Chat">
+  <span class="pulse-dot"></span>
+  Trail Guide 🏔️
+</button>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CHAT WINDOW
+═══════════════════════════════════════════════════════════════ -->
+<div id="chat-window" role="dialog" aria-label="Trail Guide Chat">
+
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <img src="images/trail-guide-character.png" alt="Trail Guide" />
+    </div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">Trail Guide</div>
+      <div class="chat-header-sub">
+        <span class="online-dot"></span>
+        MHO AI &nbsp;·&nbsp; Helping Guests since 1999
+      </div>
+    </div>
+    <button class="chat-close" id="chat-close" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="chat-messages" id="chat-messages"></div>
+
+  <div class="quick-replies" id="quick-replies"></div>
+
+  <div class="chat-input-area">
+    <input
+      type="text"
+      id="chat-input"
+      placeholder="Ask about gear, sizing, brands…"
+      autocomplete="off"
+      aria-label="Chat message"
+    />
+    <button id="send-btn" aria-label="Send message">➤</button>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT — CHAT ENGINE
+═══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── DOM refs ── */
+  const launcher   = document.getElementById('chat-launcher');
+  const chatWindow = document.getElementById('chat-window');
+  const closeBtn   = document.getElementById('chat-close');
+  const msgArea    = document.getElementById('chat-messages');
+  const qrArea     = document.getElementById('quick-replies');
+  const inputEl    = document.getElementById('chat-input');
+  const sendBtn    = document.getElementById('send-btn');
+
+  let chatOpened = false;
+  let isTyping   = false;
+
+  /* ── Helpers ── */
+  function now() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function scrollBottom() {
+    msgArea.scrollTop = msgArea.scrollHeight;
+  }
+
+  function clearQR() {
+    qrArea.innerHTML = '';
+  }
+
+  function setQR(labels, callbacks) {
+    clearQR();
+    labels.forEach((label, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'qr-btn';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        clearQR();
+        callbacks[i]();
+      });
+      qrArea.appendChild(btn);
+    });
+  }
+
+  function appendMsg(role, html) {
+    const wrap = document.createElement('div');
+    wrap.className = `msg ${role}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = html;
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = now();
+    wrap.appendChild(bubble);
+    wrap.appendChild(time);
+    msgArea.appendChild(wrap);
+    scrollBottom();
+    return wrap;
+  }
+
+  function showTyping() {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg bot';
+    wrap.id = 'typing-indicator';
+    const bubble = document.createElement('div');
+    bubble.className = 'typing-bubble';
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+    wrap.appendChild(bubble);
+    msgArea.appendChild(wrap);
+    scrollBottom();
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function botReply(html, delay, afterCallback) {
+    isTyping = true;
+    setTimeout(() => {
+      showTyping();
+      setTimeout(() => {
+        removeTyping();
+        appendMsg('bot', html);
+        isTyping = false;
+        if (afterCallback) afterCallback();
+      }, 1200 + Math.random() * 400);
+    }, delay || 0);
+  }
+
+  function showEmailCapture(context) {
+    setTimeout(() => {
+      const wrap = document.createElement('div');
+      wrap.className = 'email-capture';
+      wrap.innerHTML = `
+        <p>📧 Want me to email these picks to you?</p>
+        <div class="email-capture-row">
+          <input type="email" placeholder="your@email.com" id="email-cap-input" />
+          <button id="email-cap-btn">Send ✓</button>
+        </div>`;
+      msgArea.appendChild(wrap);
+      scrollBottom();
+
+      document.getElementById('email-cap-btn').addEventListener('click', () => {
+        const emailInput = document.getElementById('email-cap-input');
+        const email = emailInput.value.trim();
+        if (!email || !email.includes('@')) {
+          emailInput.style.borderColor = '#ef4444';
+          return;
+        }
+        const firstName = email.split('@')[0].split('.')[0];
+        const cap = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+        wrap.remove();
+        appendMsg('user', email);
+        botReply(
+          `✅ Done! Check your inbox — your picks are on the way, ${cap}! Happy adventuring. 🏔️`,
+          400,
+          () => {
+            setTimeout(() => {
+              botReply(
+                'Awesome! Is there anything else I can help you find today?',
+                800,
+                () => setQR(
+                  ['Hiking gear', 'Beach gear', 'Size help', 'Store hours', 'Shipping'],
+                  [flowHiking, flowBeach, flowSize, flowHours, flowShipping]
+                )
+              );
+            }, 200);
+          }
+        );
+      });
+    }, 600);
+  }
+
+  /* ── Conversation Flows ── */
+
+  function flowHiking() {
+    appendMsg('user', 'Hiking gear');
+    botReply(
+      `Great choice — hiking is where MHO was built! 🥾 Here are my top picks for Guests ready to hit the trail:<br><br>
+      <ul>
+        <li><strong>Merrell Moab 3 Mid</strong> — Our #1 trail boot. Waterproof, comfy out of the box, trusted by thousands of MHO Guests.</li>
+        <li><strong>Osprey Atmos AG 65L</strong> — Anti-gravity suspension means zero back pain on long miles. Best-fitting pack we carry.</li>
+        <li><strong>Patagonia Nano Puff</strong> — Packable insulation for summit layering. Sustainable and bomber.</li>
+        <li><strong>Darn Tough socks</strong> — Lifetime guarantee. Vermont merino wool. Your feet will thank you.</li>
+        <li><strong>Black Diamond trekking poles</strong> — Lightweight carbon options for serious mileage.</li>
+      </ul><br>
+      Day hikes, overnights, or thru-hiking? I can dial in specific recommendations!`,
+      300,
+      () => {
+        setQR(['Footwear help', 'Pack sizing', 'Email my picks', 'Shipping'], [flowFootwear, flowPackSizing, () => showEmailCapture('hiking'), flowShipping]);
+        showEmailCapture('hiking');
+      }
+    );
+  }
+
+  function flowFootwear() {
+    appendMsg('user', 'Footwear & shoes');
+    botReply(
+      `We carry one of the best footwear selections in the Southeast! 👟 Here's a breakdown by activity:<br><br>
+      <strong>Trail &amp; Hiking:</strong><br>
+      <ul>
+        <li><strong>Merrell</strong> — Moab 3 series. Most popular trail shoe we carry. True to size.</li>
+        <li><strong>Salomon</strong> — X Ultra 4 GTX. Aggressive grip, great for technical terrain.</li>
+        <li><strong>Keen</strong> — Targhee series. Wide toe box, great for all-day comfort.</li>
+        <li><strong>Oboz</strong> — Sawtooth series. Underrated gem — incredible support.</li>
+        <li><strong>La Sportiva</strong> — For serious trail runners and technical hikers.</li>
+        <li><strong>Vasque</strong> — Classic leather boots built to last years.</li>
+      </ul><br>
+      <strong>Casual &amp; Lifestyle:</strong><br>
+      <ul>
+        <li><strong>HOKA</strong> — Our fastest-growing brand. Maximum cushion, all-day wear.</li>
+        <li><strong>ON Running</strong> — Swiss engineering, CloudTec cushioning. Huge right now.</li>
+        <li><strong>Birkenstock</strong> — Arizona and Boston styles. Trending searches on our site.</li>
+        <li><strong>Chaco</strong> — The original adventure sandal. Adjustable, indestructible.</li>
+        <li><strong>Teva</strong> — Sport sandals for water and trail.</li>
+        <li><strong>Hey Dude</strong> — Lightweight casual slip-ons. Great for travel.</li>
+        <li><strong>Blundstone</strong> — Chelsea boot style, all-weather, incredibly versatile.</li>
+        <li><strong>SOREL</strong> — Winter boots that don't sacrifice style.</li>
+        <li><strong>OluKai</strong> — Premium Hawaiian-inspired sandals and casual shoes.</li>
+      </ul><br>
+      What activity are you shopping for? I can narrow it down!`,
+      300,
+      () => {
+        setQR(['Shoe sizing tips', 'Hiking gear', 'Email my picks', 'Beach gear'], [flowShoeSize, flowHiking, () => showEmailCapture('footwear'), flowBeach]);
+        showEmailCapture('footwear');
+      }
+    );
+  }
+
+  function flowShoeSize() {
+    appendMsg('user', 'Shoe sizing tips');
+    botReply(
+      `Shoe sizing tips from our experts 📏<br><br>
+      <ul>
+        <li><strong>Merrell, Keen, Oboz</strong> — Run true to US sizing. Wide-footers: look for the Wide (W) versions.</li>
+        <li><strong>Salomon</strong> — Can run slightly narrow. If you have wide feet, size up half a size.</li>
+        <li><strong>HOKA</strong> — True to size but roomy in the toe box. Most Guests stay true.</li>
+        <li><strong>ON Running</strong> — Run true. The Cloud 5 is their most popular everyday shoe.</li>
+        <li><strong>Birkenstock</strong> — Size down if you're between sizes. They stretch slightly with wear.</li>
+        <li><strong>Chaco</strong> — Sandals are adjustable — size to your longest toe.</li>
+        <li><strong>Blundstone</strong> — Sized in Australian sizing. Use their conversion chart — we can help in-Shop!</li>
+      </ul><br>
+      Pro tip: Shop staff at any of our 23 locations can do a proper foot measurement in under 2 minutes. Worth the visit!`,
+      300,
+      () => setQR(['Find a Shop', 'Footwear options', 'Shipping info'], [flowHours, flowFootwear, flowShipping])
+    );
+  }
+
+  function flowPackSizing() {
+    appendMsg('user', 'Pack sizing help');
+    botReply(
+      `Pack sizing is all about torso length, not height! 🎒 Here's the quick guide:<br><br>
+      <strong>Osprey (our #1 brand):</strong><br>
+      <ul>
+        <li>Measure from C7 vertebra (base of neck) to top of hip shelf</li>
+        <li>Under 16" = XS/S &nbsp;|&nbsp; 16–18" = S/M &nbsp;|&nbsp; 18"+ = M/L</li>
+        <li>Atmos AG 65 — best for multi-day. Talon 22 — best day pack.</li>
+      </ul><br>
+      <strong>By trip length:</strong><br>
+      <ul>
+        <li>Day hike: 15–25L (Osprey Talon, Gregory Nano)</li>
+        <li>Overnight: 35–50L (Osprey Stratos, Gregory Baltoro)</li>
+        <li>Multi-day: 55–75L (Osprey Atmos AG, Gregory Baltoro 65)</li>
+      </ul><br>
+      Our Shop staff can fit you in person — it makes a huge difference on the trail!`,
+      300,
+      () => setQR(['Hiking gear', 'Find a Shop', 'Email my picks'], [flowHiking, flowHours, () => showEmailCapture('packs')])
+    );
+  }
+
+  function flowBeach() {
+    appendMsg('user', 'Beach gear');
+    botReply(
+      `Sun, sand, and good vibes — let's gear you up! 🌊 MHO is a go-to for beach and coastal living:<br><br>
+      <strong>Eyewear:</strong><br>
+      <ul>
+        <li><strong>Costa del Mar</strong> — Best polarized lenses on the water. Slack Tide &amp; Fantail are top sellers.</li>
+        <li><strong>Maui Jim</strong> — Premium Japanese lenses. Incredible color enhancement on the water.</li>
+        <li><strong>Goodr</strong> — Fun, affordable, polarized. Great for active beach days.</li>
+        <li><strong>Pit Vipers</strong> — Bold styles, UV protection, cult following.</li>
+      </ul><br>
+      <strong>Apparel:</strong><br>
+      <ul>
+        <li><strong>Chubbies</strong> — Quick-dry shorts. Our guests' #1 beach pick.</li>
+        <li><strong>Free Fly</strong> — Bamboo-blend shirts. Incredibly soft, UV protective, perfect for coastal life.</li>
+        <li><strong>Fair Harbor</strong> — Sustainable swim trunks made from recycled plastic bottles.</li>
+        <li><strong>Roxy &amp; Nani Swimwear</strong> — Women's swim and beach styles.</li>
+        <li><strong>Feather 4 Arrow</strong> — Women's beach and resort wear.</li>
+      </ul><br>
+      <strong>Gear:</strong><br>
+      <ul>
+        <li><strong>YETI</strong> — Tundra coolers &amp; Rambler tumblers. Keep drinks cold all day.</li>
+        <li><strong>Neso Tents</strong> — The ultimate beach shade tent. Sets up in 60 seconds.</li>
+        <li><strong>Dock &amp; Bay</strong> — Quick-dry towels. Sand-resistant and packable.</li>
+        <li><strong>Sun Bum</strong> — Reef-safe sunscreen. Our #1 suncare brand.</li>
+      </ul>`,
+      300,
+      () => {
+        setQR(['Shipping info', 'Size help', 'Email my picks'], [flowShipping, flowSize, () => showEmailCapture('beach')]);
+        showEmailCapture('beach');
+      }
+    );
+  }
+
+  function flowSki() {
+    appendMsg('user', 'Ski & snow gear');
+    botReply(
+      `Let's get you ready for the mountain! ⛷️ MHO has you covered for ski season:<br><br>
+      <strong>Outerwear &amp; Layers:</strong><br>
+      <ul>
+        <li><strong>Patagonia</strong> — Powder Bowl jacket &amp; bibs. Waterproof, sustainable, built for real conditions.</li>
+        <li><strong>The North Face</strong> — Freedom series. Great value, excellent weather protection.</li>
+        <li><strong>Helly Hansen</strong> — Norwegian heritage brand. Excellent ski-specific technical outerwear.</li>
+        <li><strong>Krimson Klover</strong> — Women's ski apparel with serious style.</li>
+        <li><strong>Icebreaker</strong> — Merino wool base layers. Regulates temperature, odor-resistant.</li>
+        <li><strong>Smartwool</strong> — PhD ski socks. The difference between a good day and a great day on the mountain.</li>
+      </ul><br>
+      <strong>Accessories:</strong><br>
+      <ul>
+        <li><strong>Smith</strong> — Helmets and goggles. ChromaPop lenses are exceptional in flat light.</li>
+        <li><strong>Buff</strong> — Neck gaiters and balaclava options. Essential for cold days.</li>
+        <li><strong>Black Diamond</strong> — Gloves, poles, and avalanche safety gear.</li>
+        <li><strong>Moon Boot</strong> — Après-ski boots. Iconic style for lodge days.</li>
+      </ul><br>
+      Heading to Park City, Breckenridge, or somewhere local? I can tailor picks for your destination!`,
+      300,
+      () => {
+        setQR(['Size help', 'Shipping info', 'Email my picks'], [flowSize, flowShipping, () => showEmailCapture('ski')]);
+        showEmailCapture('ski');
+      }
+    );
+  }
+
+  function flowKids() {
+    appendMsg('user', 'Kids gear');
+    botReply(
+      `Getting the little adventurers geared up! 🧒 Here's what we carry for kids:<br><br>
+      <strong>Top Kids Brands at MHO:</strong><br>
+      <ul>
+        <li><strong>Patagonia Kids</strong> — Capilene base layers and Nano Puff jackets. Built to last and be handed down.</li>
+        <li><strong>The North Face Kids</strong> — Fleece, rain jackets, and boots. Great value for growing kids.</li>
+        <li><strong>Merrell Kids</strong> — Trail shoes and boots sized for young hikers.</li>
+        <li><strong>Keen Kids</strong> — Waterproof sandals and boots. Wide toe box is great for growing feet.</li>
+        <li><strong>Columbia Kids</strong> — Affordable, durable outerwear. Great for everyday outdoor use.</li>
+        <li><strong>Smartwool Kids</strong> — Merino socks and base layers. Warm without the itch.</li>
+        <li><strong>Ruffwear</strong> — Don't forget the family dog! Harnesses, boots, and gear for adventure pups.</li>
+      </ul><br>
+      <strong>Kids Sizing Tips:</strong><br>
+      <ul>
+        <li>Most kids' brands size by age AND height/weight — always check the brand chart</li>
+        <li>For shoes: measure both feet and size to the larger one, with a thumb's width of room</li>
+        <li>For jackets: size up one for layering room — kids grow fast!</li>
+      </ul>`,
+      300,
+      () => {
+        setQR(['Shoe sizing', 'Shipping info', 'Email my picks'], [flowShoeSize, flowShipping, () => showEmailCapture('kids')]);
+        showEmailCapture('kids');
+      }
+    );
+  }
+
+  function flowSale() {
+    appendMsg('user', 'Sale & deals');
+    botReply(
+      `Great news — MHO always has deals worth finding! 🏷️ Here's where to look:<br><br>
+      <ul>
+        <li>🔥 <strong>Sale section</strong> at mountainhighoutfitters.com/collections/sale — updated daily with up to 40% off</li>
+        <li>📦 <strong>Free shipping</strong> on all orders over $95 — no code needed</li>
+        <li>🎁 <strong>Summit Rewards members</strong> get early access to sale events and exclusive member pricing</li>
+        <li>📧 <strong>Email subscribers</strong> get first notice of flash sales and new arrivals</li>
+        <li>🏪 <strong>In-store clearance</strong> — each of our 23 Shops has local clearance racks not always listed online</li>
+      </ul><br>
+      Current trending sale brands include Patagonia, The North Face, Columbia, and Chubbies. Want me to email you when new deals drop?`,
+      300,
+      () => {
+        setQR(['Summit Rewards', 'Email my picks', 'Hiking gear'], [flowLoyalty, () => showEmailCapture('sale'), flowHiking]);
+        showEmailCapture('sale');
+      }
+    );
+  }
+
+  function flowGiftCard() {
+    appendMsg('user', 'Gift cards');
+    botReply(
+      `Gift cards are the perfect present for any outdoor lover! 🎁<br><br>
+      <ul>
+        <li>💳 Available in amounts from <strong>$25 to $500</strong></li>
+        <li>🌐 Redeemable online at mountainhighoutfitters.com <em>and</em> in any of our 23 Shops</li>
+        <li>📧 Digital gift cards delivered instantly by email — perfect for last-minute gifts</li>
+        <li>🎨 Physical gift cards available in-store — great for gifting in person</li>
+        <li>♾️ <strong>No expiration date</strong> — they never expire</li>
+        <li>🔄 Remaining balance carries over automatically</li>
+      </ul><br>
+      You can purchase gift cards at <strong>mountainhighoutfitters.com/products/gift-card</strong> or at any Shop location. Want me to help with anything else?`,
+      300,
+      () => setQR(['Find a Shop', 'Hiking gear', 'Sale & deals'], [flowHours, flowHiking, flowSale])
+    );
+  }
+
+  function flowLoyalty() {
+    appendMsg('user', 'Summit Rewards');
+    botReply(
+      `🏔️ <strong>Summit Rewards</strong> — MHO's loyalty program — is one of the best perks we offer!<br><br>
+      <strong>Three tiers based on annual spend:</strong><br>
+      <ul>
+        <li>🥾 <strong>Trail Starter</strong> (Free to join) — Earn 1 point per $1 spent, birthday bonus, member-only sale access</li>
+        <li>🏕️ <strong>Base Camp</strong> ($250+/year) — 1.5x points, free standard shipping always, early new-arrival access</li>
+        <li>🏔️ <strong>Summit Elite</strong> ($500+/year) — 2x points, free expedited shipping, exclusive gear previews, VIP event invites</li>
+      </ul><br>
+      Points redeem at <strong>100 pts = $5 off</strong> any purchase. No blackout dates, no expiration on active accounts.<br><br>
+      Want to sign up? Scroll up to the <strong>Summit Rewards</strong> section on this page, or I can walk you through it right here!`,
+      300,
+      () => {
+        setQR(['Sign up now', 'Learn more', 'Hiking gear'], [
+          () => {
+            clearQR();
+            appendMsg('user', 'Sign me up!');
+            botReply(
+              `Awesome! Head to the <strong>Summit Rewards</strong> section on this page — just scroll up and you\'ll see the sign-up form. It takes about 30 seconds and you start earning points on your very next purchase! 🎉`,
+              300,
+              () => {
+                setTimeout(() => {
+                  const section = document.getElementById('loyalty-section');
+                  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 800);
+                setQR(['Hiking gear', 'Sale & deals', 'Shipping'], [flowHiking, flowSale, flowShipping]);
+              }
+            );
+          },
+          flowLoyalty,
+          flowHiking
+        ]);
+      }
+    );
+  }
+
+  function flowSize() {
+    appendMsg('user', 'Size help');
+    botReply(
+      `Sizing across brands can be tricky — I've got you! Here's a quick guide for our most popular brands:<br><br>
+      <strong>Apparel:</strong><br>
+      <ul>
+        <li><strong>Patagonia, The North Face, Columbia</strong> — Run true to size. Size up for heavy layering.</li>
+        <li><strong>Arc'teryx</strong> — Runs slightly slim. Size up if you layer underneath.</li>
+        <li><strong>Vuori, Free Fly</strong> — Athletic/relaxed fit. True to size for most Guests.</li>
+        <li><strong>Chubbies</strong> — Waist-based sizing. Check their size chart for inseam length.</li>
+        <li><strong>Patagonia Women's</strong> — Runs slightly small. Size up one if between sizes.</li>
+      </ul><br>
+      <strong>Footwear:</strong><br>
+      <ul>
+        <li><strong>Merrell, Keen, Oboz</strong> — True to US sizing</li>
+        <li><strong>HOKA, ON Running</strong> — True to size, roomy toe box</li>
+        <li><strong>Birkenstock</strong> — Size down if between sizes</li>
+        <li><strong>Salomon</strong> — Slightly narrow; wide-footers size up half</li>
+      </ul><br>
+      Need help with a specific brand or product?`,
+      300,
+      () => setQR(
+        ['Footwear sizing', 'Kids sizing', 'Find a Shop'],
+        [flowShoeSize, flowKids, flowHours]
+      )
+    );
+  }
+
+  function flowHours() {
+    appendMsg('user', 'Store hours & locations');
+    botReply(
+      `Here's when you can find us! 🗓️<br><br>
+      <ul>
+        <li><strong>Mon – Sat:</strong> 9am – 8pm</li>
+        <li><strong>Sunday:</strong> 11am – 6pm</li>
+      </ul><br>
+      We have <strong>23 Shops</strong> across the Southeast and Mountain West — Alabama, Georgia, Tennessee, Florida, South Carolina, and Utah!<br><br>
+      <strong>New &amp; Coming Soon:</strong><br>
+      <ul>
+        <li>✅ <strong>Hilton Head, SC</strong> — Now Open!</li>
+        <li>✅ <strong>Park City, UT</strong> — Now Open!</li>
+        <li>🔜 Coming soon: Myrtle Beach, SC &nbsp;·&nbsp; Destin, FL &nbsp;·&nbsp; Foley, AL</li>
+      </ul><br>
+      Our staff are genuine outdoor enthusiasts — not just sales folks. Best in the business. Find your nearest Shop at <strong>mountainhighoutfitters.com</strong>!`,
+      300,
+      () => setQR(
+        ['Hiking gear', 'Shipping info', 'Beach gear'],
+        [flowHiking, flowShipping, flowBeach]
+      )
+    );
+  }
+
+  function flowShipping() {
+    appendMsg('user', 'Shipping & returns');
+    botReply(
+      `Here's everything you need to know about shipping &amp; returns 📦<br><br>
+      <ul>
+        <li>🚚 <strong>Free shipping</strong> on orders over <strong>$95</strong> — no code needed</li>
+        <li>⚡ Standard delivery: 3–5 business days</li>
+        <li>🏃 Expedited 2-day available at checkout</li>
+        <li>↩️ <strong>30-day easy returns</strong> — free return shipping on all orders</li>
+        <li>🏪 <strong>In-store pickup</strong> available same day at any of our 23 Shops</li>
+        <li>🎁 <strong>Summit Rewards</strong> Base Camp &amp; Elite members get free shipping on every order, no minimum!</li>
+      </ul>`,
+      300,
+      () => setQR(
+        ['Summit Rewards', 'Hiking gear', 'Store hours'],
+        [flowLoyalty, flowHiking, flowHours]
+      )
+    );
+  }
+
+  function flowDefault(userText) {
+    const t = userText.toLowerCase();
+    // Brand-specific responses
+    if (/patagonia/.test(t)) return botReply(`Patagonia is one of our most-loved brands! 🌿 Known for sustainable outdoor apparel — fleece, down jackets, base layers, and packs. The R1 fleece and Nano Puff jacket are perennial bestsellers at MHO. Anything specific you're looking for from Patagonia?`, 300, () => setQR(['Hiking gear', 'Size help', 'Email my picks'], [flowHiking, flowSize, () => showEmailCapture('patagonia')]));
+    if (/hoka/.test(t)) return botReply(`HOKA is one of our fastest-growing brands right now! 👟 Known for maximum cushion and a rocker sole that makes walking and running feel effortless. The Clifton and Bondi are our top sellers for everyday wear. The Speedgoat is the go-to trail runner. They run true to size with a roomy toe box. Want me to email you our top HOKA picks?`, 300, () => { setQR(['Email my picks', 'Footwear options', 'Shoe sizing'], [() => showEmailCapture('hoka'), flowFootwear, flowShoeSize]); showEmailCapture('hoka'); });
+    if (/on running|on cloud/.test(t)) return botReply(`ON Running is huge right now — Swiss engineering meets serious style. 🇨🇭 The Cloud 5 is our #1 everyday shoe. CloudTec cushioning gives a unique "landing on clouds" feel. They run true to size. The Cloudmonster is great for max cushion. Want to see our top ON picks?`, 300, () => { setQR(['Email my picks', 'Footwear options', 'Shoe sizing'], [() => showEmailCapture('on running'), flowFootwear, flowShoeSize]); showEmailCapture('on running'); });
+    if (/birkenstock/.test(t)) return botReply(`Birkenstock is one of our most-searched brands! 🌿 The Arizona (two-strap) and Boston (clog) are our top sellers. They're sized in EU sizing — if you're between sizes, go down. They do break in and mold to your foot over time. Narrow or regular width available. Want me to send you our current Birkenstock styles?`, 300, () => { setQR(['Email my picks', 'Shoe sizing', 'Footwear options'], [() => showEmailCapture('birkenstock'), flowShoeSize, flowFootwear]); showEmailCapture('birkenstock'); });
+    if (/yeti/.test(t)) return botReply(`YETI is a staple at MHO! 🧊 The Tundra 45 cooler is our best-selling cooler — keeps ice for 5+ days. The Rambler 20oz tumbler is the most gifted item we carry. The Hopper Flip 18 soft cooler is perfect for day trips. All YETI products are backed by a 5-year warranty. Want me to email you our top YETI picks?`, 300, () => { setQR(['Email my picks', 'Beach gear', 'Gift cards'], [() => showEmailCapture('yeti'), flowBeach, flowGiftCard]); showEmailCapture('yeti'); });
+    if (/north face|northface/.test(t)) return botReply(`The North Face is one of our cornerstone brands! 🏔️ The Apex Bionic jacket is a perennial bestseller. The Surge backpack is our top-selling daypack. For ski season, the Freedom series is excellent value. They run true to size — size up for heavy layering. Anything specific from TNF?`, 300, () => setQR(['Size help', 'Hiking gear', 'Email my picks'], [flowSize, flowHiking, () => showEmailCapture('north face')]));
+    if (/vuori/.test(t)) return botReply(`Vuori is one of our most popular lifestyle brands right now! 🧘 The Performance Jogger and Ponto Performance shorts are our top sellers. Incredibly soft, versatile from gym to street. They run true to size. Great for travel — wrinkle-resistant and packable. Want me to email you our top Vuori picks?`, 300, () => { setQR(['Email my picks', 'Size help', 'Sale & deals'], [() => showEmailCapture('vuori'), flowSize, flowSale]); showEmailCapture('vuori'); });
+    // Generic fallback
+    botReply(
+      `Great question! I want to make sure I give you the best answer. 🏔️<br><br>Here are some popular topics I can help with — or call our outdoor experts at <strong>877-557-5322</strong> (Mon–Sat 9am–5pm CST):`,
+      300,
+      () => setQR(
+        ['Footwear & shoes', 'Hiking gear', 'Beach gear', 'Sale & deals', 'Summit Rewards'],
+        [flowFootwear, flowHiking, flowBeach, flowSale, flowLoyalty]
+      )
+    );
+  }
+
+  /* ── Keyword matching ── */
+  /* ── AI Adventure Planner ── */
+  let adventureHistory = [];
+  let adventureModeActive = false;
+  let aiConversationActive = false; // true whenever AI has asked a clarifying question
+
+  async function callTrailGuideAI(userText) {
+    isTyping = true;
+    showTyping();
+    try {
+      const res = await fetch('/api/adventure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userText,
+          history: adventureHistory
+        })
+      });
+      const data = await res.json();
+      removeTyping();
+      isTyping = false;
+      appendMsg('bot', data.reply);
+      // Store in history for multi-turn conversation
+      adventureHistory.push({ role: 'user', content: userText });
+      adventureHistory.push({ role: 'assistant', content: data.raw || data.reply });
+      // Keep history manageable
+      if (adventureHistory.length > 20) adventureHistory = adventureHistory.slice(-20);
+      // Mark that we're in an active AI conversation — all follow-up replies go to AI
+      aiConversationActive = true;
+      adventureModeActive = false;
+      // Offer email capture after AI response
+      setTimeout(() => {
+        setQR(
+          ['Email this list to me', 'Plan another adventure', 'Browse gear', 'Store hours'],
+          [
+            () => showEmailCapture('adventure gear list'),
+            () => { adventureHistory = []; aiConversationActive = false; flowAdventurePlanner(); },
+            () => { aiConversationActive = false; flowHiking(); },
+            () => { aiConversationActive = false; flowHours(); }
+          ]
+        );
+      }, 400);
+    } catch(err) {
+      removeTyping();
+      isTyping = false;
+      appendMsg('bot', `I'm having a little trouble right now — but our outdoor experts are always ready to help! Call us at <strong>877-557-5322</strong> or visit any of our 23 Shops. 🏔️`);
+      setQR(['Hiking gear', 'Store hours', 'Shipping'], [flowHiking, flowHours, flowShipping]);
+    }
+  }
+
+  function flowAdventurePlanner() {
+    adventureModeActive = true;
+    appendMsg('user', 'Plan my adventure');
+    botReply(
+      `🗺️ Let\'s plan your adventure! I\'ll build you a personalized gear checklist with specific MHO brand picks.<br><br>
+      Tell me about your trip — just describe it naturally! For example:<br><br>
+      <ul>
+        <li><em>“I\'m doing 4 days on the AT in November, intermediate hiker”</em></li>
+        <li><em>“Family beach trip to Hilton Head for 5 days in July”</em></li>
+        <li><em>“First-time ski trip to Park City in January”</em></li>
+        <li><em>“Weekend car camping in the Smokies with 2 kids”</em></li>
+        <li><em>“Solo kayak trip on the Cahaba River, 2 days”</em></li>
+      </ul><br>
+      The more detail you give me, the better I can tailor your list. What\'s the adventure? 🗺️`,
+      400,
+      () => {
+        setQR(
+          ['AT / Backpacking', 'Beach trip', 'Ski trip', 'Car camping', 'Day hike'],
+          [
+            () => { appendMsg('user', 'Appalachian Trail backpacking trip'); callTrailGuideAI('I want to do a multi-day backpacking trip on the Appalachian Trail. Can you help me build a complete gear list? I am an intermediate hiker.'); },
+            () => { appendMsg('user', 'Beach vacation trip'); callTrailGuideAI('Planning a beach vacation trip. What gear and apparel should I get from MHO for a great beach trip?'); },
+            () => { appendMsg('user', 'Ski trip to the mountains'); callTrailGuideAI('Planning a ski trip. What outerwear, layers, and accessories do I need? Please give me a full gear list with MHO brands.'); },
+            () => { appendMsg('user', 'Car camping weekend'); callTrailGuideAI('Planning a car camping weekend with family. What camping gear, cooking equipment, and apparel do I need? Give me a full list with MHO brand recommendations.'); },
+            () => { appendMsg('user', 'Day hike gear list'); callTrailGuideAI('I want to go on a day hike. What do I need for a comfortable and safe day hike? Give me a gear list with MHO brand recommendations.'); }
+          ]
+        );
+      }
+    );
+  }
+
+  function handleInput(text) {
+    const t = text.toLowerCase();
+
+    // ★ HIGHEST PRIORITY: if we're mid-AI-conversation, ALL replies go straight to the AI
+    // This handles follow-up answers like "family for 4 days", "November", "intermediate", etc.
+    if (aiConversationActive) {
+      return callTrailGuideAI(text);
+    }
+
+    // Adventure planner — catch trip planning queries FIRST (highest priority)
+    const isAdventureQuery = (
+      /\b(at|appalachian|trail|thru.?hike|backpack.*trip|camping trip|ski trip|beach trip|kayak trip|canoe|rafting|summit|climb|expedition|adventure|trip|days?.*hik|hik.*days?|weekend.*camp|camp.*weekend|going.*hik|planning.*trip|need.*gear|gear.*list|what.*need|help.*pack|packing list|prepare|preparation)\b/.test(t) &&
+      /\b(day|night|week|days|nights|hours|miles|miles|4 day|5 day|3 day|weekend|trip|hike|camp|ski|beach|kayak|paddle|climb|summit|trail|at\b|appalachian|smoky|smokie|blue ridge|park city|hilton head|myrtle|destin|foley|alabama|georgia|tennessee|florida|carolina|utah|mountain|river|lake|coast)\b/.test(t)
+    );
+
+    if (isAdventureQuery || adventureModeActive) {
+      // If they're giving a specific trip description, send to AI
+      if (t.length > 20 || /\b(day|night|week|days|nights|miles|at\b|appalachian|smoky|park city|beach|ski|camp|kayak|hike|trip|adventure)\b/.test(t)) {
+        adventureModeActive = false; // reset after handling
+        return callTrailGuideAI(text);
+      }
+    }
+
+    // Also catch direct adventure planning requests
+    if (/plan.*adventure|adventure.*plan|gear.*list|packing.*list|what.*need.*trip|trip.*gear|help.*pack|prepare.*trip|shopping list.*trip|trip.*shopping/.test(t)) {
+      return flowAdventurePlanner();
+    }
+
+    // If in adventure mode and they type anything substantive, send to AI
+    if (adventureModeActive && t.length > 10) {
+      adventureModeActive = false;
+      return callTrailGuideAI(text);
+    }
+
+    // Footwear — expanded to catch all shoe queries
+    if (/\bshoe|\bboot|footwear|sneaker|sandal|hoka|birkenstock|merrell|salomon|keen|oboz|chaco|teva|olukai|blundstone|sorel|vasque|la sport|hey dude|on cloud|on running|altra/.test(t)) return flowFootwear();
+    if (/hik|trail|backpack|trekk|pack|osprey|atmos|talon|darn tough|black diamond/.test(t)) return flowHiking();
+    if (/beach|water|surf|paddle|kayak|coastal|costa|yeti|chubbies|free fly|neso|sun bum|dock.*bay|fair harbor/.test(t)) return flowBeach();
+    if (/ski|snow|slope|mountain|winter|helly|krimson|smartwool|icebreaker|smith goggle|moon boot/.test(t)) return flowSki();
+    if (/kid|child|youth|junior|boy|girl|little|ruffwear/.test(t)) return flowKids();
+    if (/sale|deal|discount|clearance|off|promo|coupon/.test(t)) return flowSale();
+    if (/gift card|gift certificate|present|gift/.test(t)) return flowGiftCard();
+    if (/summit reward|loyalty|reward|point|member|elite|base camp|trail starter/.test(t)) return flowLoyalty();
+    if (/size|fit|sizing|measure|measurement|run small|run large/.test(t)) return flowSize();
+    if (/hour|open|close|shop|store|location|near|find.*store|find.*shop|hilton head|myrtle|destin|foley|park city/.test(t)) return flowHours();
+    if (/ship|deliver|return|free ship|pickup|pick.?up/.test(t)) return flowShipping();
+    if (/patagonia/.test(t)) return flowDefault(text);
+    if (/hoka/.test(t)) return flowDefault(text);
+    if (/on running|on cloud/.test(t)) return flowDefault(text);
+    if (/birkenstock/.test(t)) return flowDefault(text);
+    if (/yeti/.test(t)) return flowDefault(text);
+    if (/north face|northface/.test(t)) return flowDefault(text);
+    if (/vuori/.test(t)) return flowDefault(text);
+    return flowDefault(text);
+  }
+
+  /* ── Open / Close ── */
+  function openChat() {
+    chatWindow.classList.add('visible');
+    launcher.classList.add('open');
+    launcher.querySelector('.pulse-dot') && (launcher.querySelector('.pulse-dot').style.display = 'none');
+    launcher.innerHTML = '<span style="font-size:1.1rem">✕</span>&nbsp; Close';
+    inputEl.focus();
+
+    if (!chatOpened) {
+      chatOpened = true;
+      setTimeout(() => {
+        appendMsg(
+          'bot',
+          `Hey there, adventurer! 👋 Welcome to Mountain High Outfitters. I'm your Trail Guide — here to help you find the perfect gear, plan your next adventure, or answer any questions. What brings you in today?`
+        );
+        setQR(
+          ['🗺️ Plan my adventure', 'Hiking gear', 'Beach gear', 'Size help', 'Store hours'],
+          [flowAdventurePlanner, flowHiking, flowBeach, flowSize, flowHours]
+        );
+      }, 400);
+    }
+  }
+
+  function closeChat() {
+    chatWindow.classList.remove('visible');
+    launcher.classList.remove('open');
+    launcher.innerHTML = '<span class="pulse-dot"></span> Trail Guide 🏔️';
+  }
+
+  /* ── Mobile nav ── */
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const mobileNav    = document.getElementById('mobile-nav');
+  const mobileClose  = document.getElementById('mobile-nav-close');
+
+  if (hamburgerBtn) {
+    hamburgerBtn.addEventListener('click', () => {
+      mobileNav.classList.add('open');
+    });
+  }
+  if (mobileClose) {
+    mobileClose.addEventListener('click', () => {
+      mobileNav.classList.remove('open');
+    });
+  }
+  if (mobileNav) {
+    mobileNav.addEventListener('click', (e) => {
+      if (e.target === mobileNav) mobileNav.classList.remove('open');
+    });
+    // Smooth scroll for anchor links in mobile nav
+    mobileNav.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (href && href.length > 1) {
+          const target = document.querySelector(href);
+          if (target) {
+            e.preventDefault();
+            mobileNav.classList.remove('open');
+            setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+          }
+        }
+      });
+    });
+  }
+
+  launcher.addEventListener('click', () => {
+    if (chatWindow.classList.contains('visible')) closeChat();
+    else openChat();
+  });
+  closeBtn.addEventListener('click', closeChat);
+
+  /* ── Send message ── */
+  function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text || isTyping) return;
+    inputEl.value = '';
+    clearQR();
+    appendMsg('user', text);
+    handleInput(text);
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+})();
+
+// Loyalty sign-up handler (outside IIFE so it's globally accessible)
+function handleLoyaltySignup(e) {
+  e.preventDefault();
+  const form = document.getElementById('loyalty-form');
+  const success = document.getElementById('loyalty-success');
+  form.style.display = 'none';
+  success.style.display = 'block';
+  // Scroll to success message
+  success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+</script>
+
+</body>
+</html>
