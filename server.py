@@ -296,6 +296,13 @@ async def adventure_advisor(request: Request):
 # Serve static files
 # Serve static files from the same directory as this script (works on any host)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGES_DIR = os.path.join(BASE_DIR, "images")
+
+# Mount images directory explicitly so /images/*.jpg resolves correctly
+if os.path.isdir(IMAGES_DIR):
+    app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
+
+# Mount root for index.html and everything else
 app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="static")
 
 if __name__ == "__main__":
