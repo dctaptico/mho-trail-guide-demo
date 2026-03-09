@@ -297,6 +297,15 @@ async def adventure_advisor(request: Request):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(BASE_DIR, "images")
 
+# Debug endpoint to check what files exist on the server
+@app.get("/debug/files")
+async def debug_files():
+    files = {}
+    for root, dirs, filenames in os.walk(BASE_DIR):
+        rel = os.path.relpath(root, BASE_DIR)
+        files[rel] = filenames
+    return {"base_dir": BASE_DIR, "images_dir": IMAGES_DIR, "images_exists": os.path.isdir(IMAGES_DIR), "files": files}
+
 # Explicit route for images — must be defined BEFORE the catch-all / mount
 @app.get("/images/{filename}")
 async def serve_image(filename: str):
