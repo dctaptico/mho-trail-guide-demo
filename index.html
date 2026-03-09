@@ -2291,59 +2291,10 @@
   }
 
   function handleInput(text) {
-    const t = text.toLowerCase();
-
-    // ★ HIGHEST PRIORITY: if we're mid-AI-conversation, ALL replies go straight to the AI
-    // This handles follow-up answers like "family for 4 days", "November", "intermediate", etc.
-    if (aiConversationActive) {
-      return callTrailGuideAI(text);
-    }
-
-    // Adventure planner — catch trip planning queries FIRST (highest priority)
-    const isAdventureQuery = (
-      /\b(at|appalachian|trail|thru.?hike|backpack.*trip|camping trip|ski trip|beach trip|kayak trip|canoe|rafting|summit|climb|expedition|adventure|trip|days?.*hik|hik.*days?|weekend.*camp|camp.*weekend|going.*hik|planning.*trip|need.*gear|gear.*list|what.*need|help.*pack|packing list|prepare|preparation)\b/.test(t) &&
-      /\b(day|night|week|days|nights|hours|miles|miles|4 day|5 day|3 day|weekend|trip|hike|camp|ski|beach|kayak|paddle|climb|summit|trail|at\b|appalachian|smoky|smokie|blue ridge|park city|hilton head|myrtle|destin|foley|alabama|georgia|tennessee|florida|carolina|utah|mountain|river|lake|coast)\b/.test(t)
-    );
-
-    if (isAdventureQuery || adventureModeActive) {
-      // If they're giving a specific trip description, send to AI
-      if (t.length > 20 || /\b(day|night|week|days|nights|miles|at\b|appalachian|smoky|park city|beach|ski|camp|kayak|hike|trip|adventure)\b/.test(t)) {
-        adventureModeActive = false; // reset after handling
-        return callTrailGuideAI(text);
-      }
-    }
-
-    // Also catch direct adventure planning requests
-    if (/plan.*adventure|adventure.*plan|gear.*list|packing.*list|what.*need.*trip|trip.*gear|help.*pack|prepare.*trip|shopping list.*trip|trip.*shopping/.test(t)) {
-      return flowAdventurePlanner();
-    }
-
-    // If in adventure mode and they type anything substantive, send to AI
-    if (adventureModeActive && t.length > 10) {
-      adventureModeActive = false;
-      return callTrailGuideAI(text);
-    }
-
-    // Footwear — expanded to catch all shoe queries
-    if (/\bshoe|\bboot|footwear|sneaker|sandal|hoka|birkenstock|merrell|salomon|keen|oboz|chaco|teva|olukai|blundstone|sorel|vasque|la sport|hey dude|on cloud|on running|altra/.test(t)) return flowFootwear();
-    if (/hik|trail|backpack|trekk|pack|osprey|atmos|talon|darn tough|black diamond/.test(t)) return flowHiking();
-    if (/beach|water|surf|paddle|kayak|coastal|costa|yeti|chubbies|free fly|neso|sun bum|dock.*bay|fair harbor/.test(t)) return flowBeach();
-    if (/ski|snow|slope|mountain|winter|helly|krimson|smartwool|icebreaker|smith goggle|moon boot/.test(t)) return flowSki();
-    if (/kid|child|youth|junior|boy|girl|little|ruffwear/.test(t)) return flowKids();
-    if (/sale|deal|discount|clearance|off|promo|coupon/.test(t)) return flowSale();
-    if (/gift card|gift certificate|present|gift/.test(t)) return flowGiftCard();
-    if (/summit reward|loyalty|reward|point|member|elite|base camp|trail starter/.test(t)) return flowLoyalty();
-    if (/size|fit|sizing|measure|measurement|run small|run large/.test(t)) return flowSize();
-    if (/hour|open|close|shop|store|location|near|find.*store|find.*shop|hilton head|myrtle|destin|foley|park city/.test(t)) return flowHours();
-    if (/ship|deliver|return|free ship|pickup|pick.?up/.test(t)) return flowShipping();
-    if (/patagonia/.test(t)) return flowDefault(text);
-    if (/hoka/.test(t)) return flowDefault(text);
-    if (/on running|on cloud/.test(t)) return flowDefault(text);
-    if (/birkenstock/.test(t)) return flowDefault(text);
-    if (/yeti/.test(t)) return flowDefault(text);
-    if (/north face|northface/.test(t)) return flowDefault(text);
-    if (/vuori/.test(t)) return flowDefault(text);
-    return flowDefault(text);
+    // ALL typed messages go straight to the AI — one seamless conversation
+    // Quick reply buttons still use their specific flows as shortcuts
+    adventureModeActive = false;
+    return callTrailGuideAI(text);
   }
 
   /* ── Open / Close ── */
